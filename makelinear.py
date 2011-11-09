@@ -24,7 +24,7 @@ def make_linear_output(filename = None, num = 200, cols = 2):
     return create_datasets(_linear_function, indataset, filename=filename)
     
 if __name__ == '__main__':
-    (perfect, perfect_noisy, censored, censored_noisy) = make_linear_output('linear_test_output')
+    (perfect, perfect_noisy, censored, censored_noisy) = make_linear_output('linear_test_output.txt')
     
     import matplotlib.pyplot as plt
     plt.figure()
