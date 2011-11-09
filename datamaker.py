@@ -77,12 +77,12 @@ def _savefile(filename, indataset, outdataset):
     No headers will be entered but the structure will tab-separated like:
         X1, X2, ..., time, event
     '''
-    with open(filename, 'w') as F:
+    with open(filename, 'w') as filehandle:
         for indata, outdata in zip(indataset, outdataset):
             for data in indata:
-                F.write(str(data) + "\t")
-            F.write(str(outdata[0]) + "\t")
-            F.write(str(outdata[1]) + "\n")
+                filehandle.write(str(data) + "\t")
+            filehandle.write(str(outdata[0]) + "\t")
+            filehandle.write(str(outdata[1]) + "\n")
 
 def create_datasets(function, indataset, censoredratio = 0.5,
                    filename = None):
@@ -112,15 +112,18 @@ def create_datasets(function, indataset, censoredratio = 0.5,
     #Need to two loops because I need the smallest value in perfect for
     #noise and censoring
     min_value = None
+    max_value = None
     for indata in indataset:
         val = [_make_perfect(function, indata)]
         perfect = np.append(perfect, val, axis=0)
         if min_value is None or val[0] < min_value:
             min_value = val[0]
+        if max_value is None or val[0] > max_value:
+            max_value = val[0]
     
     for indata in indataset:
         perfect_noisy = np.append(perfect_noisy,
-                                  [_make_perfect_noisy(function, indata, min_value)],
+                                  [_make_perfect_noisy(function, indata, min_value, max_value)],
                                    axis=0)
         
         if random() < censoredratio:
@@ -128,13 +131,13 @@ def create_datasets(function, indataset, censoredratio = 0.5,
                                  [_make_censored(function, indata, min_value)],
                                   axis=0)
             censored_noisy = np.append(censored_noisy,
-                                       [_make_censored_noisy(function, indata, min_value)],
+                                       [_make_censored_noisy(function, indata, min_value, max_value)],
                                         axis=0)
         else:
             censored = np.append(censored, [_make_perfect(function, indata)],
                                             axis=0)
             censored_noisy = np.append(censored_noisy,
-                                       [_make_perfect_noisy(function, indata, min_value)],
+                                       [_make_perfect_noisy(function, indata, min_value, max_value)],
                                         axis=0)
     
     if filename is not None:
