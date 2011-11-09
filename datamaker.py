@@ -28,7 +28,10 @@ def _make_perfect_noisy(function, indata, minimum, maximum):
     Maximum is the largest value of y in the perfect data set.
     '''
     output = function(indata)
-    noise = uniform(minimum - output, __noise_level * maximum)
+    if output - minimum < __noise_level * maximum:
+        noise = uniform(minimum - output, __noise_level * maximum)
+    else:
+        noise = uniform(-__noise_level * maximum, __noise_level * maximum)
     return [output + noise, 1]
 
 def _make_censored(function, indata, minimum):
@@ -69,7 +72,12 @@ def _make_censored_noisy(function, indata, minimum, maximum):
         censored = output - uniform(output * 0.1, output - minimum)
     else:
         censored = output - uniform(0, output - minimum)
-    noise = uniform(minimum - censored, __noise_level * maximum)
+    
+    if censored - minimum < __noise_level * maximum:
+        noise = uniform(minimum - censored, __noise_level * maximum)
+    else:
+        noise = uniform(-__noise_level * maximum, __noise_level * maximum)    
+    
     return [censored + noise, 0]
 
 def _savefile(filename, indataset, outdataset):
@@ -116,10 +124,10 @@ def create_datasets(function, indataset, censoredratio = 0.5,
     for indata in indataset:
         val = [_make_perfect(function, indata)]
         perfect = np.append(perfect, val, axis=0)
-        if min_value is None or val[0] < min_value:
-            min_value = val[0]
-        if max_value is None or val[0] > max_value:
-            max_value = val[0]
+        if min_value is None or perfect[-1, 0] < min_value:
+            min_value = perfect[-1, 0]
+        if max_value is None or perfect[-1, 0] > max_value:
+            max_value = perfect[-1, 0]
     
     for indata in indataset:
         perfect_noisy = np.append(perfect_noisy,
