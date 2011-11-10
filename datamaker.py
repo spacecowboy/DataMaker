@@ -3,7 +3,7 @@ This module is designed to create data sets for machine learning. Primarily
 data intended to simulate censored survival data.
 '''
 
-from random import random, uniform
+from random import random, uniform, sample
 import re
 import numpy as np
 
@@ -112,10 +112,10 @@ def create_datasets(function, indataset, censoredratio = 0.5,
     Censored and noisy data is guaranteed to be greater than zero. Also, it is
     guaranteed to be greater than the smallest value in the perfect data set.
     '''
-    perfect = np.empty((0, 2), dtype='float')
-    perfect_noisy = np.empty((0, 2), dtype='float')
-    censored = np.empty((0, 2), dtype='float')
-    censored_noisy = np.empty((0, 2), dtype='float')
+    perfect = np.empty((0, 2), dtype=float)
+    perfect_noisy = np.empty((0, 2), dtype=float)
+    censored = np.empty((0, 2), dtype=float)
+    censored_noisy = np.empty((0, 2), dtype=float)
     
     #Need to two loops because I need the smallest value in perfect for
     #noise and censoring
@@ -164,3 +164,32 @@ def create_datasets(function, indataset, censoredratio = 0.5,
                   censored_noisy)
     
     return (perfect, perfect_noisy, censored, censored_noisy)
+    
+def _random_binaries(shape):
+    '''Given a shape as (x, y) will return a numpy array of that shape with 1 and -1 randomly distributed in it.'''
+    (rows, cols) = shape
+    binarray = np.empty((0, cols), dtype=float)
+    for row in xrange(rows):
+        binrow = []
+        for col in xrange(cols):
+            #Select one of 1 and -1 to append to the list
+            binrow.append(sample([1, -1], 1)[0])
+        if cols > 1:
+            binrow = [binrow]
+        binarray = np.append(binarray, binrow, axis=0)
+    
+    return binarray
+    
+def add_noise_to_(indataset, scale=0.4):
+    '''Given a data set, this function will return the data set with some gaussian noise to every data point in it.
+    Scale is the variable describing the likelihood of large changes. Higher values indicate larger probility for higher
+    values.'''
+    
+    #This gives gaussian noise
+    noise = np.random.exponential(scale, indataset.shape)
+    #But it's only positive, so multiply some by -1
+    binary = _random_binaries(indataset.shape)
+    noise *= binary
+    return indataset + noise
+    
+    
