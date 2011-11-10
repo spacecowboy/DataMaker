@@ -205,7 +205,7 @@ def _random_binaries(shape):
     
     return binarray
     
-def add_noise_to(indataset, scale=0.4):
+def add_noise_to(indataset, scale=1.5):
     '''Given a data set, this function will return the data set with some gaussian noise to every data point in it.
     Scale is the variable describing the likelihood of large changes. Higher values indicate larger probility for higher
     values.'''
