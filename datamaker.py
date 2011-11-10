@@ -165,13 +165,38 @@ def create_datasets(function, indataset, censoredratio = 0.5,
     
     return (perfect, perfect_noisy, censored, censored_noisy)
     
+def create_datasets_with_input_noise(function, indataset, censoredratio = 0.5, filename = None):
+    '''Does the same as create_dataset but the noise is added to the input and not to the output.
+    Returns a tuple with (perfect, censored, noisy_indataset)
+    '''
+    #Use create dataset
+    (perfect, _, censored, _) = create_datasets(function, indataset, censoredratio)
+    #Create noisy indata
+    noisy_indataset = add_noise_to(indataset)
+    
+    if filename is not None:
+        m = re.search('(?<=.)\.[^\.]+$', filename)
+        #Will include the .
+        extension = m.group(0) if m is not None else ''
+        #Remove extension from filename
+        filename = re.sub('(?<=.)\.[^\.]+$', '', filename)
+        #Save perfect and censored with the indata we've got
+        _savefile(filename + '_perfect' + extension, indataset, perfect)
+        _savefile(filename + '_censored' + extension, indataset, censored)
+        #Save with the noisy indata
+        _savefile(filename + '_perfect_noisyinput' + extension, noisy_indataset, perfect)
+        _savefile(filename + '_censored_noisyinput' + extension, noisy_indataset, censored)
+        
+    return (perfect, censored, noisy_indataset)
+    
+    
 def _random_binaries(shape):
     '''Given a shape as (x, y) will return a numpy array of that shape with 1 and -1 randomly distributed in it.'''
     (rows, cols) = shape
     binarray = np.empty((0, cols), dtype=float)
-    for row in xrange(rows):
+    for _ in xrange(rows):
         binrow = []
-        for col in xrange(cols):
+        for _ in xrange(cols):
             #Select one of 1 and -1 to append to the list
             binrow.append(sample([1, -1], 1)[0])
         if cols > 1:
@@ -180,7 +205,7 @@ def _random_binaries(shape):
     
     return binarray
     
-def add_noise_to_(indataset, scale=0.4):
+def add_noise_to(indataset, scale=0.4):
     '''Given a data set, this function will return the data set with some gaussian noise to every data point in it.
     Scale is the variable describing the likelihood of large changes. Higher values indicate larger probility for higher
     values.'''
